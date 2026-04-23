@@ -1,0 +1,27 @@
+AIM: rover#flow@2.2
+
+FLOW RoverGameFlow {
+  SCENARIO PlayMission {
+    STEP "The player opens a predefined mission level."
+    STEP "The interface shows the grid, mission objective, and code editor."
+    STEP "The player writes a Python-like rover program."
+    STEP "The player starts execution using Run or Step."
+    STEP "The game executes commands in order."
+    STEP "The interface updates rover position and mission state after each command."
+    STEP "The game ends in mission success or mission failure."
+    STEP "The player can reset the mission and try again."
+  }
+
+  SCENARIO StepExecution {
+    STEP "The player presses Step."
+    STEP "The game executes exactly one command."
+    STEP "The game updates the grid, rover state, and execution log."
+    STEP "The interface highlights the new execution state."
+  }
+
+  SCENARIO FullRunExecution {
+    STEP "The player presses Run."
+    STEP "The game executes commands sequentially until completion or failure."
+    STEP "The interface shows the final result."
+  }
+}

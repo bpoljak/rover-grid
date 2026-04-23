@@ -1,0 +1,50 @@
+AIM: rover#schema@2.2
+
+SCHEMA RoverSchema {
+  TYPE Direction = "north" | "east" | "south" | "west"
+
+  TYPE TileType =
+    | "empty"
+    | "rock"
+    | "sample"
+    | "hazard"
+    | "start"
+    | "goal"
+
+  ENTITY Position {
+    x: number
+    y: number
+  }
+
+  ENTITY Rover {
+    position: Position
+    direction: Direction
+    collectedSamples: number
+    stepCount: number
+    missionStatus: string
+  }
+
+  ENTITY Cell {
+    position: Position
+    tile: TileType
+  }
+
+  ENTITY Grid {
+    width: number
+    height: number
+    cells: Cell[]
+  }
+
+  ENTITY Objective {
+    type: string
+    targetCount: number?
+  }
+
+  ENTITY Level {
+    id: string
+    name: string
+    grid: Grid
+    roverStart: Rover
+    objectives: Objective[]
+  }
+}

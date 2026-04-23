@@ -1,0 +1,15 @@
+AIM: rover#intent@2.2
+
+INTENT RoverGame {
+  SUMMARY: "Grid-based coding puzzle game where the player writes Python-like commands to control a rover and complete planetary missions."
+
+  REQUIREMENTS {
+    - "The game provides predefined puzzle levels on a 2D grid."
+    - "The player controls the rover by writing a constrained Python-like command sequence."
+    - "The player can execute the program step by step or run it fully."
+    - "The interface shows the grid, the mission objective, the code editor, and the execution result."
+    - "The game clearly communicates mission success and mission failure."
+    - "The first version does not use a real Python runtime."
+    - "The first version supports only predefined levels and does not include a level editor."
+  }
+}

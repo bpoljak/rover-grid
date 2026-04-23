@@ -1,0 +1,55 @@
+AIM: rover#contract@2.2
+
+CONTRACT RoverGameContract {
+  OPERATION parseProgram {
+    INPUT {
+      source: string
+    }
+
+    OUTPUT {
+      commands: string[]
+      errors: string[]
+    }
+  }
+
+  OPERATION loadLevel {
+    INPUT {
+      levelId: string
+    }
+
+    OUTPUT {
+      level: Level
+    }
+  }
+
+  OPERATION executeStep {
+    INPUT {
+      level: Level
+      rover: Rover
+      commands: string[]
+      currentCommandIndex: number
+    }
+
+    OUTPUT {
+      rover: Rover
+      level: Level
+      currentCommandIndex: number
+      logEntry: string
+      missionEnded: boolean
+      missionSuccess: boolean
+      error: string?
+    }
+  }
+
+  OPERATION resetMission {
+    INPUT {
+      level: Level
+    }
+
+    OUTPUT {
+      rover: Rover
+      currentCommandIndex: number
+      log: string[]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "stack": {
+    "frontend": "React",
+    "backend": "None",
+    "database": "None"
+  },
+  "registry": "https://intentmodel.dev/registry-files/index.json",
+  "outputDir": "aim"
+}

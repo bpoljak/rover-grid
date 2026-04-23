@@ -1,0 +1,20 @@
+AIM: rover#view@2.2
+
+VIEW RoverGameView {
+  LAYOUT {
+    panel "mission"
+    panel "grid"
+    panel "editor"
+    panel "execution_log"
+  }
+
+  REQUIREMENTS {
+    - "The mission panel shows the current objective before execution begins."
+    - "The grid panel always shows rover position and facing direction."
+    - "The editor panel accepts multiline rover command input."
+    - "The interface provides Run, Step, and Reset controls."
+    - "The execution log shows commands in execution order."
+    - "Errors are displayed clearly near the editor and execution log."
+    - "Mission success and mission failure are visually distinct."
+  }
+}
