@@ -1,24 +1,45 @@
 AIM: rover#contract@2.2
 
 CONTRACT RoverGameContract {
+
   OPERATION parseProgram {
     INPUT {
       source: string
+      unlockedFeatures: Feature[]
     }
 
     OUTPUT {
-      commands: string[]
-      errors: string[]
+      program: Program?
+      errors: ParseError[]
+    }
+
+    RULES {
+      - "Commands must be called with parentheses: move_forward(), turn_left(), turn_right(), collect_sample(). Commands without parentheses are a syntax_error."
+      - "for and while are only valid when 'loops' is present in unlockedFeatures."
+      - "If for or while is encountered and 'loops' is not in unlockedFeatures, a locked_command error is produced. It must not be an unknown_command error."
+      - "The while condition must be one of the defined BuiltinConditions. Any other expression is a syntax_error."
+      - "Statements inside a loop body must be indented by at least 2 spaces relative to the loop keyword line."
+      - "Incorrect or missing indentation inside a loop body is an invalid_indentation error."
+      - "Loop bodies may only contain CommandCall statements. Nested loops are not permitted."
+      - "program is null when errors is non-empty."
+      - "Each parsed Statement node receives a sourceLine field set to its 1-based line number in the source string. For CommandCall nodes inside loop bodies, sourceLine is the line of that command, not the line of the enclosing loop keyword."
     }
   }
 
   OPERATION loadLevel {
     INPUT {
       levelId: string
+      progressionState: ProgressionState
     }
 
     OUTPUT {
       level: Level
+      isLocked: boolean
+    }
+
+    RULES {
+      - "A level with order N is locked if progressionState.highestUnlockedLevel < N."
+      - "isLocked is true when the level is not yet accessible. The caller must not allow the player to enter a locked level."
     }
   }
 
@@ -26,18 +47,30 @@ CONTRACT RoverGameContract {
     INPUT {
       level: Level
       rover: Rover
-      commands: string[]
-      currentCommandIndex: number
+      program: Program
+      stepIndex: number
     }
 
     OUTPUT {
       rover: Rover
       level: Level
-      currentCommandIndex: number
+      stepIndex: number
+      activeSourceLine: number?
       logEntry: string
       missionEnded: boolean
       missionSuccess: boolean
       error: string?
+    }
+
+    RULES {
+      - "stepIndex counts individual CommandCall executions across all statements, including each iteration of loop bodies."
+      - "ForStatement body is executed iterations times in sequence before the engine advances to the next top-level statement."
+      - "WhileStatement body is executed repeatedly as long as the condition holds against the current rover and level state. Each body execution advances stepIndex by the number of commands in the body."
+      - "Execution stops immediately on the first error. error is set and missionEnded is true."
+      - "On mission success, missionEnded and missionSuccess are both true."
+      - "activeSourceLine is the sourceLine of the CommandCall executed in this step. For a command inside a loop body, activeSourceLine is the sourceLine of that CommandCall, not the sourceLine of the loop header."
+      - "When missionEnded is true, activeSourceLine is null."
+      - "Run mode is implemented by the caller invoking executeStep repeatedly at a fixed inter-step delay until missionEnded is true. The semantics of each executeStep call are identical regardless of whether the caller is in Step or Run mode."
     }
   }
 
@@ -48,8 +81,97 @@ CONTRACT RoverGameContract {
 
     OUTPUT {
       rover: Rover
-      currentCommandIndex: number
+      stepIndex: number
       log: string[]
+    }
+  }
+
+  OPERATION loadProgress {
+    OUTPUT {
+      progressionState: ProgressionState
+    }
+
+    RULES {
+      - "Reads progressionState from localStorage."
+      - "If no saved state exists, returns the initial progression state: highestUnlockedLevel = 1, completedLevels = [], unlockedFeatures = [], seenTutorials = []."
+    }
+  }
+
+  OPERATION saveProgress {
+    INPUT {
+      progressionState: ProgressionState
+    }
+
+    OUTPUT {
+      success: boolean
+    }
+
+    RULES {
+      - "Writes progressionState to localStorage under a fixed application key."
+    }
+  }
+
+  OPERATION resetProgress {
+    OUTPUT {
+      progressionState: ProgressionState
+    }
+
+    RULES {
+      - "Removes all saved progress from localStorage."
+      - "Returns the initial progression state: highestUnlockedLevel = 1, completedLevels = [], unlockedFeatures = [], seenTutorials = []."
+    }
+  }
+
+  OPERATION completeLevel {
+    INPUT {
+      levelId: string
+      levelOrder: number
+      progressionState: ProgressionState
+    }
+
+    OUTPUT {
+      progressionState: ProgressionState
+      newlyUnlockedLevel: number?
+      newlyUnlockedFeatures: Feature[]
+    }
+
+    RULES {
+      - "If levelId is not already in completedLevels, it is added."
+      - "highestUnlockedLevel is updated to max(current highestUnlockedLevel, levelOrder + 1)."
+      - "If levelOrder is 3 and 'loops' is not yet in unlockedFeatures, 'loops' is added to unlockedFeatures and included in newlyUnlockedFeatures."
+      - "newlyUnlockedLevel is set to levelOrder + 1 if that level was not previously unlocked, otherwise null."
+      - "The resulting progressionState is saved via saveProgress before returning."
+    }
+  }
+
+  OPERATION shouldShowTutorial {
+    INPUT {
+      tutorialId: TutorialId
+      progressionState: ProgressionState
+    }
+
+    OUTPUT {
+      show: boolean
+    }
+
+    RULES {
+      - "Returns true if tutorialId is not present in progressionState.seenTutorials."
+    }
+  }
+
+  OPERATION markTutorialSeen {
+    INPUT {
+      tutorialId: TutorialId
+      progressionState: ProgressionState
+    }
+
+    OUTPUT {
+      progressionState: ProgressionState
+    }
+
+    RULES {
+      - "Adds tutorialId to seenTutorials if not already present."
+      - "Saves the updated progressionState via saveProgress."
     }
   }
 }

@@ -2,19 +2,63 @@ AIM: rover#view@2.2
 
 VIEW RoverGameView {
   LAYOUT {
+    panel "level_select"
     panel "mission"
     panel "grid"
     panel "editor"
     panel "execution_log"
+    overlay "tutorial_popup"
+    overlay "level_complete_feedback"
+    overlay "help_book_modal"
   }
 
   REQUIREMENTS {
+    // Level select
+    - "The level select panel lists all levels."
+    - "Locked levels are visually distinct from unlocked levels (e.g. dimmed with a lock indicator)."
+    - "Locked levels are not interactive; the player cannot enter them."
+    - "A reset progress control is accessible from the level select or a settings area."
+
+    // Gameplay panels
     - "The mission panel shows the current objective before execution begins."
     - "The grid panel always shows rover position and facing direction."
     - "The editor panel accepts multiline rover command input."
     - "The interface provides Run, Step, and Reset controls."
     - "The execution log shows commands in execution order."
+
+    // Editor execution highlighting
+    - "During execution, the editor panel displays an active-line highlight on the source line currently being executed."
+    - "The active-line highlight is visually distinct from parse error marks and from normal unexecuted editor text."
+    - "Only one source line carries the active-line highlight at any time."
+    - "The active-line highlight clears when execution ends in success, failure, or reset."
+    - "Parse error marks and the active-line highlight may coexist on different lines without visual conflict."
+
+    // Run animation
+    - "When the player presses Run, the grid, execution log, and editor active-line highlight update progressively as each step executes, rather than jumping to the final program state."
+    - "The rover moves visibly through the grid during Run so the player can observe each movement at a clearly perceivable pace."
+
+    // Errors
     - "Errors are displayed clearly near the editor and execution log."
+    - "Locked-command errors are visually distinct from syntax errors."
     - "Mission success and mission failure are visually distinct."
+
+    // Help Book modal
+    - "A Help Book button is visible during gameplay."
+    - "Activating the Help Book button opens the help_book_modal overlay."
+    - "The Help Book lists all currently unlocked commands, each with a brief description and a syntax example."
+    - "Hovering a command entry in the Help Book shows an explanation of what the command does."
+    - "Before loops are unlocked, the Help Book does not display for, while, or any built-in conditions."
+    - "After loops are unlocked, the Help Book additionally shows: for loop syntax, while loop syntax, the list of supported while conditions (path_ahead(), sample_here(), goal_here()), and a brief note about indentation."
+
+    // Tutorial popups
+    - "The tutorial_popup overlay blocks all gameplay interaction until the player dismisses it."
+    - "The level 1 tutorial popup introduces the game: this is a coding puzzle game; the player writes commands to control the rover; the goal is to solve the mission on the grid."
+    - "The level 4 tutorial popup introduces loops: loops are now unlocked; for repeats a fixed number of times; while repeats while a condition holds; the player chooses which fits the solution."
+
+    // Level complete feedback
+    - "On mission success, the level_complete_feedback overlay is shown."
+    - "The overlay communicates success and names the next level that is now unlocked."
+    - "When level 3 is completed, the overlay additionally communicates that loop commands are now unlocked."
+    - "The overlay provides navigation to the next level or back to the level list."
   }
 }

@@ -1,6 +1,9 @@
 AIM: rover#schema@2.2
 
 SCHEMA RoverSchema {
+
+  // --- Core game types ---
+
   TYPE Direction = "north" | "east" | "south" | "west"
 
   TYPE TileType =
@@ -10,6 +13,35 @@ SCHEMA RoverSchema {
     | "hazard"
     | "start"
     | "goal"
+
+  // --- Progression types ---
+
+  TYPE Feature = "loops"
+
+  TYPE TutorialId = "level1_welcome" | "level4_loops"
+
+  // --- DSL types ---
+
+  TYPE BuiltinCondition = "path_ahead()" | "sample_here()" | "goal_here()"
+
+  TYPE BasicCommandName = "move_forward" | "turn_left" | "turn_right" | "collect_sample"
+
+  TYPE Statement =
+    | CommandCall
+    | ForStatement
+    | WhileStatement
+
+  TYPE ParseErrorKind =
+    | "syntax_error"
+    | "locked_command"
+    | "unknown_command"
+    | "invalid_indentation"
+
+  // --- Execution state types ---
+
+  TYPE ExecutionStatus = "idle" | "running" | "completed" | "failed"
+
+  // --- Game entities ---
 
   ENTITY Position {
     x: number
@@ -43,8 +75,55 @@ SCHEMA RoverSchema {
   ENTITY Level {
     id: string
     name: string
+    order: number
     grid: Grid
     roverStart: Rover
     objectives: Objective[]
+    tutorialId: TutorialId?
+  }
+
+  // --- DSL AST entities ---
+
+  ENTITY CommandCall {
+    name: BasicCommandName
+    sourceLine: number
+  }
+
+  ENTITY ForStatement {
+    iterations: number
+    body: CommandCall[]
+    sourceLine: number
+  }
+
+  ENTITY WhileStatement {
+    condition: BuiltinCondition
+    body: CommandCall[]
+    sourceLine: number
+  }
+
+  ENTITY Program {
+    statements: Statement[]
+  }
+
+  ENTITY ParseError {
+    kind: ParseErrorKind
+    message: string
+    line: number?
+  }
+
+  // --- Execution state entity ---
+
+  ENTITY ExecutionState {
+    status: ExecutionStatus
+    activeSourceLine: number?
+  }
+
+  // --- Progression entity ---
+
+  ENTITY ProgressionState {
+    highestUnlockedLevel: number
+    completedLevels: string[]
+    unlockedFeatures: Feature[]
+    seenTutorials: TutorialId[]
   }
 }

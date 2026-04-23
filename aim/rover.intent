@@ -1,7 +1,7 @@
 AIM: rover#intent@2.2
 
 INTENT RoverGame {
-  SUMMARY: "Grid-based coding puzzle game where the player writes Python-like commands to control a rover and complete planetary missions."
+  SUMMARY: "Grid-based coding puzzle game where the player writes Python-like commands to control a rover and complete planetary missions. Includes linear level progression, command unlocking, a Help Book modal, tutorial popups, localStorage-based persistence, editor execution highlighting, and animated step-by-step Run behavior."
 
   REQUIREMENTS {
     - "The game provides predefined puzzle levels on a 2D grid."
@@ -11,5 +11,55 @@ INTENT RoverGame {
     - "The game clearly communicates mission success and mission failure."
     - "The first version does not use a real Python runtime."
     - "The first version supports only predefined levels and does not include a level editor."
+
+    - "Commands must use parentheses. The valid basic command syntax is: move_forward(), turn_left(), turn_right(), collect_sample()."
+    - "Commands without parentheses are a syntax error. The previous syntax without parentheses is no longer valid."
+
+    - "When the player presses Step, the editor highlights the source line of the command currently being executed. The highlight advances line by line as the player continues stepping."
+    - "When the player presses Run, the same editor active-line highlight advances automatically through the program as each statement executes, synchronized with rover movement on the grid."
+    - "The highlighted source line always corresponds to the CommandCall currently being executed by the engine. For commands inside loop bodies, the highlight is on the loop body line being executed, not the loop header line."
+    - "When execution ends in success, failure, or reset, the editor active-line highlight is cleared."
+    - "Parse errors and execution highlighting coexist correctly. Invalid lines may carry parse error marks, but only executable lines receive the active-line highlight."
+
+    - "Run must not complete the program instantly from the player's perspective. Run executes the same underlying program semantics as repeated Step calls, automatically advancing at a fixed inter-step delay that is clearly perceivable to the player."
+    - "During Run, the rover visibly moves through the grid step by step so the player can observe the mission unfolding."
+    - "The execution log, rover position, mission state, and editor active-line highlight all update progressively during Run."
+    - "Step and Run share the same execution semantics and state transitions. Run is a timed continuation of the Step execution model, not a separate bulk-simulation mode."
+
+    - "Level progression is linear. Completing level N unlocks level N+1."
+    - "A player who has not completed level N cannot enter level N+1."
+    - "Levels that are not yet unlocked are locked and must not be accessible."
+    - "Completing level 3 additionally unlocks loop command support."
+
+    - "After loops are unlocked, the player may use for and while loop syntax."
+    - "The for loop syntax is: for i in range(N): followed by an indented body of commands."
+    - "The while loop syntax is: while <condition>: followed by an indented body of commands."
+    - "The while loop condition must be one of the supported built-in conditions: path_ahead(), sample_here(), goal_here()."
+    - "Arbitrary expressions are not valid in while conditions."
+    - "Loop bodies may contain only basic commands, not nested loops."
+    - "Statements inside a loop body must be indented by at least 2 spaces relative to the loop keyword."
+    - "The for and while keywords are locked commands before loops are unlocked. Entering them before unlock produces a locked-command error, not a generic unknown-command error."
+
+    - "The game includes a Help Book modal accessible during gameplay."
+    - "The Help Book shows only commands currently unlocked by the player."
+    - "Before loops are unlocked, the Help Book does not display loop commands or loop conditions."
+    - "After loops are unlocked, the Help Book additionally shows for loop syntax, while loop syntax, supported while conditions, and a brief indentation note."
+    - "Hovering a command entry in the Help Book shows an explanation of what the command does and a syntax example."
+
+    - "On first arrival to level 1, a welcome tutorial popup is shown. It explains that this is a coding puzzle game, that commands control the rover, and that the goal is to solve the mission on the grid."
+    - "On first arrival to level 4, a loops tutorial popup is shown. It explains that loops are now unlocked, the basic idea of for (fixed count) and while (condition-based), and that the player chooses which fits the solution."
+    - "Tutorial popups appear only once unless progress is reset."
+
+    - "Player progress is persisted in localStorage. The persisted fields are: highestUnlockedLevel, completedLevels, unlockedFeatures, seenTutorials."
+    - "The app restores saved progress on revisit."
+    - "A reset progress action clears all saved progress, unlocked features, and tutorial seen-state."
+
+    - "When a player completes a level, the interface shows a level-complete feedback overlay communicating success and the next level unlock."
+    - "When level 3 is completed, the level-complete feedback also communicates that loop commands are now unlocked."
+
+    - "Level 4 is the first loop tutorial level. Its mission should naturally encourage for usage over writing repeated commands manually."
+    - "Level 5 reinforces loops with a repeating movement-and-turn pattern that is naturally solved with for."
+    - "Level 6 introduces a situation where while is more appropriate than for, using a built-in condition such as path_ahead()."
+    - "Levels 4 through 6 do not introduce new game mechanics beyond those already defined."
   }
 }

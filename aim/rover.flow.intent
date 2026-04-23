@@ -1,27 +1,101 @@
 AIM: rover#flow@2.2
 
 FLOW RoverGameFlow {
+
+  SCENARIO AppStart {
+    STEP "The app loads and calls loadProgress."
+    STEP "If saved progress exists in localStorage it is restored; otherwise the initial progression state is used."
+    STEP "The level select screen renders with each level's locked or unlocked state derived from highestUnlockedLevel."
+  }
+
+  SCENARIO LevelSelect {
+    STEP "The player views the level list."
+    STEP "Levels with order greater than highestUnlockedLevel are displayed as locked."
+    STEP "The player selects an unlocked level."
+    STEP "shouldShowTutorial is called for that level's tutorialId (if any)."
+    STEP "If shouldShowTutorial returns true, the tutorial popup is shown before gameplay begins."
+    STEP "The player dismisses the tutorial popup."
+    STEP "markTutorialSeen is called for the shown tutorial."
+    STEP "The level loads and gameplay begins."
+  }
+
+  SCENARIO LockedLevelAccess {
+    STEP "The player attempts to select a locked level."
+    STEP "The interface indicates the level is locked and does not allow entry."
+    STEP "The interface may hint which prior level must be completed to unlock it."
+  }
+
   SCENARIO PlayMission {
-    STEP "The player opens a predefined mission level."
+    STEP "The player opens an unlocked mission level."
     STEP "The interface shows the grid, mission objective, and code editor."
     STEP "The player writes a Python-like rover program."
     STEP "The player starts execution using Run or Step."
-    STEP "The game executes commands in order."
-    STEP "The interface updates rover position and mission state after each command."
+    STEP "The game executes commands using the shared execution model: rover position, execution log, and editor active-line highlight all update after each command."
     STEP "The game ends in mission success or mission failure."
     STEP "The player can reset the mission and try again."
   }
 
   SCENARIO StepExecution {
     STEP "The player presses Step."
-    STEP "The game executes exactly one command."
-    STEP "The game updates the grid, rover state, and execution log."
-    STEP "The interface highlights the new execution state."
+    STEP "executeStep is called with the current rover state, program, and stepIndex."
+    STEP "The grid updates to show the new rover position and facing direction."
+    STEP "The execution log appends the new log entry."
+    STEP "The editor active-line highlight moves to the activeSourceLine returned by executeStep."
+    STEP "If missionEnded is true, the active-line highlight is cleared and the appropriate mission-end state is shown."
   }
 
   SCENARIO FullRunExecution {
     STEP "The player presses Run."
-    STEP "The game executes commands sequentially until completion or failure."
-    STEP "The interface shows the final result."
+    STEP "The game enters running state."
+    STEP "executeStep is called for the current step."
+    STEP "The grid, execution log, and editor active-line highlight update to reflect the executed step."
+    STEP "The game waits a fixed inter-step delay that is clearly perceivable to the player."
+    STEP "If missionEnded is false and the program has remaining steps, the game repeats from the executeStep call."
+    STEP "If missionEnded is true, the running state ends: the active-line highlight is cleared and the mission result is displayed."
+    STEP "Throughout Run, the rover visibly moves through the grid step by step. The player observes the mission unfolding rather than the rover teleporting to the final state."
+  }
+
+  SCENARIO LevelCompletion {
+    STEP "The player achieves mission success."
+    STEP "completeLevel is called to update and persist progression state."
+    STEP "The interface displays the level-complete feedback overlay."
+    STEP "The overlay communicates success and that the next level is now unlocked."
+    STEP "The player may navigate to the next level or return to the level list."
+  }
+
+  SCENARIO Level3Completion {
+    STEP "The player achieves mission success on level 3."
+    STEP "completeLevel is called. It adds 'loops' to unlockedFeatures and unlocks level 4."
+    STEP "The level-complete feedback overlay additionally communicates that loop commands (for, while) are now unlocked."
+    STEP "From this point, parseProgram accepts for and while when 'loops' is passed in unlockedFeatures."
+    STEP "The Help Book is updated to show loop syntax and supported conditions."
+    STEP "Level 4's tutorial popup becomes available on first entry."
+  }
+
+  SCENARIO FirstArrivalLevel1 {
+    STEP "The player selects level 1 for the first time."
+    STEP "shouldShowTutorial returns true for 'level1_welcome'."
+    STEP "The welcome popup is shown. It explains: this is a coding puzzle game; commands control the rover; the goal is to solve the mission on the grid."
+    STEP "The player dismisses the popup."
+    STEP "markTutorialSeen is called for 'level1_welcome'."
+    STEP "Level 1 loads normally."
+  }
+
+  SCENARIO FirstArrivalLevel4 {
+    STEP "The player selects level 4 for the first time after unlocking it."
+    STEP "shouldShowTutorial returns true for 'level4_loops'."
+    STEP "The loops popup is shown. It explains: loops are now unlocked; for repeats a fixed number of times; while repeats as long as a condition holds; the player decides which fits the solution."
+    STEP "The player dismisses the popup."
+    STEP "markTutorialSeen is called for 'level4_loops'."
+    STEP "Level 4 loads normally."
+  }
+
+  SCENARIO ResetProgress {
+    STEP "The player triggers reset progress."
+    STEP "resetProgress is called, clearing all localStorage state."
+    STEP "The app applies the initial progression state: highestUnlockedLevel = 1, completedLevels = [], unlockedFeatures = [], seenTutorials = []."
+    STEP "All levels except level 1 are shown as locked."
+    STEP "All tutorials are considered unseen."
+    STEP "Loop commands are locked again."
   }
 }
